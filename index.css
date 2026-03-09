@@ -1,0 +1,76 @@
+/* Global reset for printing */
+@media print {
+  html, body {
+    background-color: white !important;
+    color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Ensure all text is black and background is transparent/white */
+  * {
+    color: black !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Force white background for specific containers that might have colors */
+  .bg-white, .bg-slate-50, .bg-slate-100, .bg-indigo-600, .bg-slate-800, .bg-slate-900, .bg-indigo-900, .bg-\[\#2e36bf\], .bg-emerald-600, .bg-rose-500 {
+    background-color: white !important;
+  }
+
+  /* Ensure borders are visible and black */
+  .border, .border-b, .border-t, .border-l, .border-r, .border-slate-100, .border-slate-200 {
+    border-color: #000 !important;
+  }
+
+  /* Table specific print styles */
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    border: 1px solid black !important;
+  }
+  
+  th, td {
+    border: 1px solid black !important;
+    padding: 8px !important;
+    color: black !important;
+  }
+
+  /* Hide elements that shouldn't be printed */
+  .print-hidden, button, aside, nav, .no-print, [role="button"] {
+    display: none !important;
+  }
+
+  /* Ensure main content takes full width */
+  main {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+    position: static !important;
+  }
+
+  /* Remove any fixed positioning that might break layout */
+  .fixed, .sticky {
+    position: static !important;
+  }
+
+  /* Specific overrides for text colors that might be hardcoded */
+  .text-white, .text-indigo-100, .text-slate-400, .text-slate-500, .text-indigo-300 {
+    color: black !important;
+  }
+
+  /* Ensure SVGs are black or hidden if they are decorative */
+  svg {
+    fill: black !important;
+    stroke: black !important;
+  }
+}

@@ -6,6 +6,7 @@ import { Employee } from '../types';
 
 interface Props {
   employees: Employee[];
+  currentUser?: Employee | null;
 }
 
 interface Message {
@@ -14,7 +15,7 @@ interface Message {
     text: string;
 }
 
-const AIAssistant: React.FC<Props> = ({ employees }) => {
+const AIAssistant: React.FC<Props> = ({ employees, currentUser }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
       { id: 'welcome', role: 'assistant', text: 'Halo! Saya asisten virtual KGB. Ada yang bisa saya bantu mengenai data pegawai atau peraturan gaji?' }
@@ -39,7 +40,7 @@ const AIAssistant: React.FC<Props> = ({ employees }) => {
     setInput('');
     setIsTyping(true);
 
-    const response = await chatWithData(input, employees);
+    const response = await chatWithData(input, employees, currentUser);
     
     const botMsg: Message = { id: (Date.now() + 1).toString(), role: 'assistant', text: response || "Maaf, saya tidak mengerti." };
     setMessages(prev => [...prev, botMsg]);
