@@ -37,7 +37,7 @@ export const MOCK_EMPLOYEES = [
     "Pangkat": "Pengatur (II/c)",
     "Gaji Lama": "2300000",
     "Gaji Baru": "2380000",
-    "TMT KGB Baru": "2026-04-01",
+    "TMT KGB Baru": "2023-05-01",
     "Unit Kerja": "Kecamatan Kota",
     "Status KGB": "SK Terbit"
   },
@@ -49,7 +49,7 @@ export const MOCK_EMPLOYEES = [
     "Pangkat": "Penata Muda Tk.I (III/b)",
     "Gaji Lama": "2800000",
     "Gaji Baru": "2900000",
-    "TMT KGB Baru": "2026-04-01",
+    "TMT KGB Baru": "2026-03-01",
     "Unit Kerja": "Bappeda",
     "Status KGB": "Proses BKD"
   },
@@ -61,7 +61,7 @@ export const MOCK_EMPLOYEES = [
     "Pangkat": "Pembina (IV/a)",
     "Gaji Lama": "4500000",
     "Gaji Baru": "4700000",
-    "TMT KGB Baru": "2026-04-01",
+    "TMT KGB Baru": "2026-06-01",
     "Unit Kerja": "Sekretariat Daerah",
     "Status KGB": ""
   },
@@ -73,7 +73,7 @@ export const MOCK_EMPLOYEES = [
     "Pangkat": "Penata Muda (III/a)",
     "Gaji Lama": "2661000",
     "Gaji Baru": "2744000",
-    "TMT KGB Baru": "2026-04-01",
+    "TMT KGB Baru": "2026-01-01",
     "Unit Kerja": "BKPSDM",
     "Status KGB": "Sudah Proses"
   },
@@ -85,7 +85,7 @@ export const MOCK_EMPLOYEES = [
     "Pangkat": "Penata (III/c)",
     "Gaji Lama": "3150000",
     "Gaji Baru": "3250000",
-    "TMT KGB Baru": "2026-04-01",
+    "TMT KGB Baru": "2026-01-01",
     "Unit Kerja": "Diskominfo",
     "Status KGB": "SK Terbit"
   },
@@ -97,7 +97,7 @@ export const MOCK_EMPLOYEES = [
     "Pangkat": "Penata Muda Tk.I (III/b)",
     "Gaji Lama": "2900000",
     "Gaji Baru": "3000000",
-    "TMT KGB Baru": "2026-04-01",
+    "TMT KGB Baru": "2026-02-01",
     "Unit Kerja": "Dinas Pendidikan",
     "Status KGB": "Sudah Proses"
   },

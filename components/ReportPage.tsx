@@ -249,6 +249,10 @@ const ReportPage: React.FC<Props> = ({ employees, currentUser }) => {
                         className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                     />
                 </div>
+                <div className="px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl text-sm font-bold flex items-center gap-2">
+                    <History size={16} />
+                    Menampilkan semua data KGB yang sudah diproses (SK Terbit)
+                </div>
             </div>
           )}
       </div>

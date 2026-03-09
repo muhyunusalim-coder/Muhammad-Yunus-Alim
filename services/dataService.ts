@@ -9,11 +9,11 @@ const determineStatusKepegawaian = (pangkat: string): 'PNS' | 'PPPK' | '-' => {
   // Logic: PPPK = Golongan V - XII (Roman Numerals)
   // Check specifically for PPPK numbers first to avoid confusion
   // Matches: V, VI, VII, VIII, IX, X, XI, XII surrounded by word boundaries, slashes, or parens
-  const pppkRegex = /(^|[\s(/])(V|VI|VII|VIII|IX|X|XI|XII)($|[\s)/])/;
+  const pppkRegex = /(^|[\s(\/])(V|VI|VII|VIII|IX|X|XI|XII)($|[\s)\/])/;
   
   // Logic: PNS = Golongan I - IV
   // Matches: I, II, III, IV usually followed by slash (e.g., III/a) or just the roman numeral
-  const pnsRegex = /(^|[\s(/])(I|II|III|IV)($|[\s)/])/;
+  const pnsRegex = /(^|[\s(\/])(I|II|III|IV)($|[\s)\/])/;
 
   if (pppkRegex.test(p)) {
     return 'PPPK';
@@ -143,7 +143,7 @@ const parseCSV = (csvText: string): Employee[] => {
   });
 };
 
-const mapMockData = (mock: Record<string, string>[]): Employee[] => {
+const mapMockData = (mock: any[]): Employee[] => {
   return mock.map((m, i) => {
     const rawStatus = m["Status KGB"] || m["Status"] || "";
     const normalizedStatus = rawStatus.toLowerCase();
@@ -184,52 +184,18 @@ const mapMockData = (mock: Record<string, string>[]): Employee[] => {
   });
 };
 
-// In-memory cache variables
-let cachedData: Employee[] | null = null;
-let lastFetchTime: number = 0;
-let fetchPromise: Promise<Employee[]> | null = null;
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
-
-export const fetchEmployeeData = async (forceRefresh: boolean = false): Promise<Employee[]> => {
-  const now = Date.now();
-  
-  // 1. Return cached data if valid and not forcing refresh
-  if (!forceRefresh && cachedData && (now - lastFetchTime < CACHE_TTL)) {
-    return cachedData;
-  }
-
-  // 2. If a fetch is already in progress, return the existing promise (Request Collapsing)
-  if (fetchPromise) {
-    return fetchPromise;
-  }
-
-  // 3. Start a new fetch and store the promise
-  fetchPromise = (async () => {
-    try {
-      const response = await fetch(CSV_EXPORT_URL);
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const text = await response.text();
-      const parsed = parseCSV(text);
-      if (parsed.length === 0) throw new Error("Empty CSV");
-      
-      // Update cache
-      cachedData = parsed;
-      lastFetchTime = now;
-      
-      return parsed;
-    } catch (error) {
-      console.warn("Failed to fetch live data from Google Sheets. Loading mock data.", error);
-      const mock = mapMockData(MOCK_EMPLOYEES);
-      
-      // We don't cache mock data permanently to allow retries later
-      return mock;
-    } finally {
-      // Clear the promise so subsequent calls can trigger a new fetch if needed
-      fetchPromise = null;
+export const fetchEmployeeData = async (): Promise<Employee[]> => {
+  try {
+    const response = await fetch(CSV_EXPORT_URL);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
     }
-  })();
-
-  return fetchPromise;
+    const text = await response.text();
+    const parsed = parseCSV(text);
+    if (parsed.length === 0) throw new Error("Empty CSV");
+    return parsed;
+  } catch (error) {
+    console.warn("Failed to fetch live data from Google Sheets. Loading mock data.", error);
+    return mapMockData(MOCK_EMPLOYEES);
+  }
 };

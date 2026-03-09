@@ -270,29 +270,26 @@ function App() {
     const currentMonth = now.getMonth(); 
     const currentYear = now.getFullYear();
 
-    // Calculate Next Month
-    const nextMonthDate = new Date(currentYear, currentMonth + 1, 1);
-    const nextMonth = nextMonthDate.getMonth();
-    const nextYear = nextMonthDate.getFullYear();
-
-    // KGB Bulan Berjalan (Current Month)
-    const currentMonthCount = employees.filter(e => {
+    const processedCount = employees.filter(e => {
         const tmtDate = getTmtDate(e.tmt);
         if (!tmtDate || isNaN(tmtDate.getTime())) return false;
-        return tmtDate.getMonth() === currentMonth && tmtDate.getFullYear() === currentYear;
+        
+        const diffTime = tmtDate.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        const isCurrentMonth = tmtDate.getMonth() === currentMonth && tmtDate.getFullYear() === currentYear;
+        const isUrgent = diffDays >= 0 && diffDays <= 20;
+        const isOverdue = diffDays < 0;
+
+        return isCurrentMonth || isUrgent || isOverdue;
     }).length;
 
-    // KGB Akan Datang (Next Month)
-    const nextMonthCount = employees.filter(e => {
-        const tmtDate = getTmtDate(e.tmt);
-        if (!tmtDate || isNaN(tmtDate.getTime())) return false;
-        return tmtDate.getMonth() === nextMonth && tmtDate.getFullYear() === nextYear;
-    }).length;
+    const upcomingCount = employees.length - processedCount;
 
     return {
       totalEmployees: employees.length,
-      upcomingKGB: nextMonthCount,
-      processedKGB: currentMonthCount
+      upcomingKGB: upcomingCount,
+      processedKGB: processedCount
     };
   }, [employees]);
 

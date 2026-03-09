@@ -70,7 +70,7 @@ const StatCard = ({ title, value, icon: Icon, color, subtext, trend, delay }: { 
 
 const DashboardStats: React.FC<Props> = ({ stats }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <StatCard 
         title="Total Pegawai" 
         value={stats.totalEmployees.toString()} 
@@ -84,7 +84,16 @@ const DashboardStats: React.FC<Props> = ({ stats }) => {
         value={stats.upcomingKGB.toString()} 
         icon={Calendar} 
         color="amber"
-        subtext="Periode Bulan Berikutnya"
+        subtext="Dalam Antrian Proses"
+        delay="delay-100"
+      />
+      <StatCard 
+        title="KGB Terproses" 
+        value={stats.processedKGB.toString()} 
+        icon={CheckCircle} 
+        color="emerald"
+        subtext="Dokumen SK Terbit"
+        trend="+12%"
         delay="delay-200"
       />
     </div>
