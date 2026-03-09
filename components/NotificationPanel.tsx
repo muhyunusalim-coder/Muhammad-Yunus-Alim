@@ -1,6 +1,6 @@
 
 import React, { useMemo, useState } from 'react';
-import { X, Bell, Calendar, Briefcase, Clock, Download, ArrowRightCircle, AlertOctagon, Filter, AlertTriangle, Loader2 } from 'lucide-react';
+import { X, Bell, Calendar, Briefcase, Clock, Download, ArrowRightCircle, Filter, AlertTriangle, Loader2 } from 'lucide-react';
 import { Employee } from '../types';
 
 interface Props {
@@ -71,13 +71,9 @@ const NotificationPanel: React.FC<Props> = ({ isOpen, onClose, employees }) => {
       const isOverdue = diffDays < 0;
 
       // Add properties for display
-      // @ts-ignore
       emp.daysRemaining = diffDays;
-      // @ts-ignore
       emp.isCurrentMonth = isCurrentMonth;
-      // @ts-ignore
       emp.isNextMonth = isNextMonth;
-      // @ts-ignore
       emp.isOverdue = isOverdue;
 
       return isCurrentMonth || isUpcoming || isNextMonth || isOverdue;
@@ -85,7 +81,6 @@ const NotificationPanel: React.FC<Props> = ({ isOpen, onClose, employees }) => {
 
     // Sort by soonest first (ascending daysRemaining). 
     // Negative numbers (overdue) will appear first.
-    // @ts-ignore
     list.sort((a, b) => a.daysRemaining - b.daysRemaining);
 
     return { notifications: list };
@@ -101,9 +96,7 @@ const NotificationPanel: React.FC<Props> = ({ isOpen, onClose, employees }) => {
 
         // 1. Prepare data specifically for Excel
         const dataForExcel = notifications.map((emp, index) => {
-            // @ts-ignore
             const days = emp.daysRemaining;
-            // @ts-ignore
             const isNextMonth = emp.isNextMonth;
 
             let sisaWaktu = `${days} Hari`;
@@ -235,9 +228,7 @@ const NotificationPanel: React.FC<Props> = ({ isOpen, onClose, employees }) => {
                   </div>
 
                   {notifications.map((emp) => {
-                    // @ts-ignore
                     const days = emp.daysRemaining;
-                    // @ts-ignore
                     const isNextMonth = emp.isNextMonth;
                     
                     const isOverdue = days < 0;

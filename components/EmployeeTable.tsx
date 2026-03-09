@@ -78,6 +78,22 @@ const EmployeeTable: React.FC<Props> = ({ employees, onStatusToggle, currentUser
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
   };
 
+  const isNextMonthKGB = (tmt: string) => {
+    const now = new Date();
+    const nextMonth = (now.getMonth() + 1) % 12;
+    const nextMonthYear = now.getFullYear() + (now.getMonth() === 11 ? 1 : 0);
+    
+    let tmtDate: Date | null = null;
+    if (tmt.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        tmtDate = new Date(tmt);
+    } else if (tmt.match(/^\d{1,2}[-/]\d{1,2}[-/]\d{4}$/)) {
+        const parts = tmt.split(/[-/]/);
+        tmtDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+    }
+    
+    return tmtDate && tmtDate.getMonth() === nextMonth && tmtDate.getFullYear() === nextMonthYear;
+  };
+
   const uniqueUnits = useMemo(() => {
     const units = new Set(employees.map(e => e.unitKerja).filter(Boolean));
     return Array.from(units).sort();
@@ -268,6 +284,7 @@ const EmployeeTable: React.FC<Props> = ({ employees, onStatusToggle, currentUser
                     <td className="px-6 py-5 text-center whitespace-nowrap">
                       {(() => {
                         const days = getDaysRemaining(emp.tmt);
+                        const nextMonth = isNextMonthKGB(emp.tmt);
                         
                         if (emp.status === 'Processed') {
                           return (
@@ -278,6 +295,15 @@ const EmployeeTable: React.FC<Props> = ({ employees, onStatusToggle, currentUser
                           );
                         }
                         
+                        if (nextMonth) {
+                            return (
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-sm mx-auto" title="Target Bulan Depan">
+                                  <AlertCircle size={14} className="flex-shrink-0" />
+                                  <span className="text-[11px] font-bold hidden sm:inline">Proses H-20</span>
+                                </div>
+                            );
+                        }
+
                         if (days !== null) {
                           if (days >= 0 && days <= 20) {
                             return (

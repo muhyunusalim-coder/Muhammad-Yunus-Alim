@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { BookOpen, Scale, FileText, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, Search, Download, ExternalLink } from 'lucide-react';
+import { BookOpen, Scale, FileText, ChevronDown, ChevronUp, Search, Download, ExternalLink } from 'lucide-react';
 
 const FAQ_ITEMS = [
     {
