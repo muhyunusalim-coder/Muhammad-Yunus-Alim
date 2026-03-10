@@ -6,7 +6,7 @@ import {
 } from 'recharts';
 import { 
   Users, Building2, TrendingUp, Wallet, PieChart as PieChartIcon, 
-  BarChart3, Award 
+  BarChart3, Award, ArrowUpRight 
 } from 'lucide-react';
 import { Employee } from '../types';
 
@@ -104,6 +104,9 @@ const StatisticsPage: React.FC<Props> = ({ employees }) => {
       return Object.entries(ranges).map(([name, value]) => ({ name, value }));
   }, [employees]);
 
+  const formatRupiah = (num: number) => {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
+  };
 
   const formatShortRupiah = (num: number) => {
      if (num >= 1000000000) return (num / 1000000000).toFixed(1) + ' M';

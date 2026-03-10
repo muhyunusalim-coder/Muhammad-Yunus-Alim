@@ -19,7 +19,7 @@ export interface DashboardStats {
   totalEmployees: number;
   upcomingKGB: number;
   processedKGB: number;
-  nextMonthName: string;
+  currentMonthKGB: number;
 }
 
 export interface ChartData {

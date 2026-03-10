@@ -1,17 +1,18 @@
 
 import React, { useState, useMemo } from 'react';
-import { Search, Briefcase, Clock, AlertTriangle, CheckCircle2, BadgeCheck, User, X, Building2, TrendingUp, Calendar, AlertCircle, ChevronRight, CalendarRange } from 'lucide-react';
+import { Search, Briefcase, Clock, AlertTriangle, CheckCircle2, BadgeCheck, User, X, Building2, TrendingUp, Calendar, AlertCircle, ChevronRight, CalendarRange, Trash2 } from 'lucide-react';
 import { Employee } from '../types';
 
 interface Props {
   employees: Employee[];
   onStatusToggle: (id: string) => void;
+  onDeleteEmployee?: (id: string) => void;
   currentUser: Employee | null;
 }
 
 const ADMIN_NIP = '199601192025061007';
 
-const EmployeeTable: React.FC<Props> = ({ employees, onStatusToggle, currentUser }) => {
+const EmployeeTable: React.FC<Props> = ({ employees, onStatusToggle, onDeleteEmployee, currentUser }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [monthFilter, setMonthFilter] = useState<string>('All'); // Changed from statusFilter to monthFilter
   const [unitFilter, setUnitFilter] = useState<string>('All');
@@ -76,22 +77,6 @@ const EmployeeTable: React.FC<Props> = ({ employees, onStatusToggle, currentUser
   // Helper untuk format rupiah
   const formatRupiah = (num: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
-  };
-
-  const isNextMonthKGB = (tmt: string) => {
-    const now = new Date();
-    const nextMonth = (now.getMonth() + 1) % 12;
-    const nextMonthYear = now.getFullYear() + (now.getMonth() === 11 ? 1 : 0);
-    
-    let tmtDate: Date | null = null;
-    if (tmt.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        tmtDate = new Date(tmt);
-    } else if (tmt.match(/^\d{1,2}[-/]\d{1,2}[-/]\d{4}$/)) {
-        const parts = tmt.split(/[-/]/);
-        tmtDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-    }
-    
-    return tmtDate && tmtDate.getMonth() === nextMonth && tmtDate.getFullYear() === nextMonthYear;
   };
 
   const uniqueUnits = useMemo(() => {
@@ -282,55 +267,62 @@ const EmployeeTable: React.FC<Props> = ({ employees, onStatusToggle, currentUser
                         </div>
                     </td>
                     <td className="px-6 py-5 text-center whitespace-nowrap">
-                      {(() => {
-                        const days = getDaysRemaining(emp.tmt);
-                        const nextMonth = isNextMonthKGB(emp.tmt);
-                        
-                        if (emp.status === 'Processed') {
-                          return (
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm mx-auto" title="Selesai">
-                              <CheckCircle2 size={14} className="flex-shrink-0" />
-                              <span className="text-[11px] font-bold hidden sm:inline">Selesai</span>
-                            </div>
-                          );
-                        }
-                        
-                        if (nextMonth) {
+                      <div className="flex items-center justify-center gap-2">
+                        {(() => {
+                          const days = getDaysRemaining(emp.tmt);
+                          
+                          if (emp.status === 'Processed') {
                             return (
-                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-sm mx-auto" title="Target Bulan Depan">
-                                  <AlertCircle size={14} className="flex-shrink-0" />
-                                  <span className="text-[11px] font-bold hidden sm:inline">Proses H-20</span>
-                                </div>
-                            );
-                        }
-
-                        if (days !== null) {
-                          if (days >= 0 && days <= 20) {
-                            return (
-                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 shadow-sm animate-pulse mx-auto" title={`Mendesak: H-${days}`}>
-                                  <AlertTriangle size={14} className="flex-shrink-0" />
-                                  <span className="text-[11px] font-bold hidden sm:inline">H-{days}</span>
-                                </div>
-                            );
-                          } else if (days < 0) {
-                            return (
-                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 shadow-sm mx-auto" title={`Lewat ${Math.abs(days)} hari`}>
-                                  <Clock size={14} className="flex-shrink-0" />
-                                  <span className="text-[11px] font-bold hidden sm:inline">Telat</span>
-                                </div>
-                            );
-                          } else {
-                            return (
-                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 mx-auto" title={`H-${days}`}>
-                                  <ChevronRight size={14} className="flex-shrink-0 md:hidden" />
-                                  <span className="text-[11px] font-bold hidden sm:inline">H-{days}</span>
-                                </div>
+                              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm" title="Selesai">
+                                <CheckCircle2 size={14} className="flex-shrink-0" />
+                                <span className="text-[11px] font-bold hidden sm:inline">Selesai</span>
+                              </div>
                             );
                           }
-                        }
+                          
+                          if (days !== null) {
+                            if (days >= 0 && days <= 20) {
+                              return (
+                                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 shadow-sm animate-pulse" title={`Mendesak: H-${days}`}>
+                                    <AlertTriangle size={14} className="flex-shrink-0" />
+                                    <span className="text-[11px] font-bold hidden sm:inline">H-{days}</span>
+                                  </div>
+                              );
+                            } else if (days < 0) {
+                              return (
+                                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 shadow-sm" title={`Lewat ${Math.abs(days)} hari`}>
+                                    <Clock size={14} className="flex-shrink-0" />
+                                    <span className="text-[11px] font-bold hidden sm:inline">Telat</span>
+                                  </div>
+                              );
+                            } else {
+                              return (
+                                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200" title={`H-${days}`}>
+                                    <ChevronRight size={14} className="flex-shrink-0 md:hidden" />
+                                    <span className="text-[11px] font-bold hidden sm:inline">H-{days}</span>
+                                  </div>
+                              );
+                            }
+                          }
 
-                        return <span className="text-slate-300">-</span>;
-                      })()}
+                          return <span className="text-slate-300">-</span>;
+                        })()}
+
+                        {emp.status === 'Processed' && onDeleteEmployee && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (window.confirm(`Hapus data ${emp.nama} dari daftar terproses?`)) {
+                                onDeleteEmployee(emp.id);
+                              }
+                            }}
+                            className="p-1.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                            title="Hapus dari daftar"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
                     </td>
                     <td className="px-3 py-5 text-center md:hidden">
                         <ChevronRight size={16} className="text-slate-300" />

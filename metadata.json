@@ -1,5 +1,5 @@
 {
   "name": "Layanan KGB",
-  "description": "Sistem Manajemen KGB dengan aturan pemrosesan H-20 untuk bulan berikutnya, integrasi Google Sheets, dan Asisten AI Gemini.",
+  "description": "Sistem Informasi Manajemen Kenaikan Gaji Berkala (KGB) dengan integrasi Google Sheets dan Asisten AI Gemini.",
   "requestFramePermissions": []
 }

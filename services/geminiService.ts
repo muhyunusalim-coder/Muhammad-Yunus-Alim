@@ -58,7 +58,7 @@ export const analyzeEmployeeKGB = async (employee: Employee, promptType: 'draft_
   }
 };
 
-export const chatWithData = async (query: string, employees: Employee[], currentUser?: Employee | null) => {
+export const chatWithData = async (query: string, employees: Employee[]) => {
     try {
         const apiKey = process.env.API_KEY;
         if (!apiKey) return "API Key missing.";
@@ -66,82 +66,23 @@ export const chatWithData = async (query: string, employees: Employee[], current
         const ai = new GoogleGenAI({ apiKey });
         const model = "gemini-3-flash-preview";
 
-        // 1. Find specific employees mentioned in the query (Search logic)
-        const lowerQuery = query.toLowerCase();
-        
-        // Search by Name or NIP
-        const nameNipMatches = employees.filter(e => 
-            (e.nama && lowerQuery.includes(e.nama.toLowerCase())) || 
-            (e.nip && lowerQuery.includes(e.nip.toLowerCase()))
-        ).slice(0, 10);
-
-        // Search by Month if mentioned
-        const months = ["januari", "februari", "maret", "april", "mei", "juni", "juli", "agustus", "september", "oktober", "november", "desember"];
-        const monthShorts = ["jan", "feb", "mar", "apr", "mei", "jun", "jul", "agt", "sep", "okt", "nov", "des"];
-        let mentionedMonthIdx = -1;
-        months.forEach((m, i) => { if(lowerQuery.includes(m)) mentionedMonthIdx = i; });
-        if(mentionedMonthIdx === -1) {
-            monthShorts.forEach((m, i) => { if(lowerQuery.includes(m)) mentionedMonthIdx = i; });
-        }
-
-        const monthMatches = mentionedMonthIdx !== -1 ? employees.filter(e => {
-            const parts = e.tmt.split(/[-/]/);
-            if (parts.length < 2) return false;
-            const m = parseInt(parts[1]);
-            return m === mentionedMonthIdx + 1;
-        }).slice(0, 15) : [];
-
-        // 2. Summarize a sample of data for general context
-        const sampleEmployees = employees.slice(0, 10);
-        
-        // Combine unique employees (name/nip matches + month matches + sample)
-        // Use a Map to ensure uniqueness by ID
-        const contextMap = new Map<string, Employee>();
-        [...nameNipMatches, ...monthMatches, ...sampleEmployees].forEach(e => contextMap.set(e.id, e));
-        const combinedEmployees = Array.from(contextMap.values());
-        
-        const summary = combinedEmployees.map(e => `- ${e.nama} (NIP: ${e.nip}, ${e.pangkat}): TMT ${e.tmt}, MK: ${e.masaKerja}, Gaji Baru: ${formatCurrency(e.gajiBaru)}`).join('\n');
-        
+        // Summarize data for context (limit to avoid token limits if list is huge)
+        const summary = employees.slice(0, 30).map(e => `- ${e.nama} (${e.pangkat}): TMT ${e.tmt}`).join('\n');
         const stats = {
             total: employees.length,
             totalIncrease: employees.reduce((acc, curr) => acc + (curr.gajiBaru - curr.gajiLama), 0)
         };
 
-        const personalContext = currentUser ? `
-            DATA USER SAAT INI (ORANG YANG BERTANYA):
-            Nama: ${currentUser.nama}
-            NIP: ${currentUser.nip}
-            Pangkat/Golongan: ${currentUser.pangkat}
-            Status: ${currentUser.statusKepegawaian}
-            TMT KGB Berikutnya: ${currentUser.tmt}
-            Masa Kerja saat ini: ${currentUser.masaKerja}
-            Gaji Lama: ${formatCurrency(currentUser.gajiLama)}
-            Gaji Baru: ${formatCurrency(currentUser.gajiBaru)}
-        ` : "User belum login atau data tidak ditemukan.";
-
         const context = `
-            Peran: Kamu adalah "Asisten Ahli KGB (Kenaikan Gaji Berkala)".
+            Peran: Kamu adalah "Asisten Sahabat KGB".
             
-            PENGETAHUAN PERATURAN KGB:
-            1. KGB diberikan setiap 2 TAHUN SEKALI jika memenuhi syarat (Penilaian kinerja minimal 'Baik').
-            2. Dasar Hukum: PP No. 7 Tahun 1977 (PNS) dan Peraturan Presiden No. 98 Tahun 2020 (PPPK).
-            3. Syarat Pengajuan: 
-               - Fotokopi SK Pangkat Terakhir.
-               - Fotokopi SK KGB Terakhir.
-               - Penilaian Kinerja (SKP) 2 tahun terakhir bernilai baik.
-            4. Perhitungan Masa Kerja: KGB dihitung berdasarkan masa kerja golongan (MKG). Setiap 2 tahun MKG bertambah, gaji naik satu tingkat dalam tabel gaji sesuai golongan.
-            5. Jika TMT KGB sudah lewat tapi belum diproses, statusnya adalah "Overdue/Terlambat".
+            ATURAN UTAMA:
+            1. JAWAB DENGAN SINGKAT & PADAT. Usahakan maksimal 2-3 kalimat saja. Langsung ke intinya.
+            2. JANGAN gunakan markdown (tanda bintang ** dilarang). Gunakan teks biasa.
+            3. Gunakan bahasa Indonesia yang santai, akrab, dan bersahabat (seperti teman kantor).
+            4. Gunakan emoji secukupnya (😊, 👍).
 
-            ATURAN JAWABAN:
-            1. Jika user bertanya "kapan kgb saya" atau sejenisnya, gunakan DATA USER SAAT INI.
-            2. Jawab dengan ramah, profesional namun tetap bersahabat.
-            3. JANGAN gunakan markdown (tanda bintang ** dilarang). Gunakan teks biasa.
-            4. Gunakan emoji secukupnya.
-            5. Jika ditanya perhitungan masa kerja, jelaskan bahwa KGB naik setiap 2 tahun masa kerja golongan.
-
-            ${personalContext}
-
-            Data Pegawai Terkait/Sampel (Gunakan data ini untuk menjawab pertanyaan tentang orang lain):
+            Data Pegawai (Sampel):
             ${summary}
             
             Statistik Global:
@@ -151,10 +92,8 @@ export const chatWithData = async (query: string, employees: Employee[], current
             Pertanyaan User: "${query}"
 
             Panduan Jawaban:
-            - Jika bertanya tentang dirinya sendiri, sebutkan namanya dan tanggal TMT-nya.
-            - Jika bertanya tentang orang lain, cari namanya di daftar "Data Pegawai Terkait/Sampel" di atas.
-            - Jika bertanya tentang aturan, berikan penjelasan singkat berdasarkan pengetahuan di atas.
-            - Jika data tidak ada di daftar, katakan bahwa data tersebut tidak ditemukan di sistem saat ini dan arahkan untuk menghubungi admin.
+            - Jika ditanya data spesifik, langsung berikan datanya tanpa pembukaan panjang lebar.
+            - Jika data tidak ada di sampel, bilang "Datanya nggak ada di sampel saya nih, coba cek tabel utama ya."
         `;
 
         const response = await ai.models.generateContent({
