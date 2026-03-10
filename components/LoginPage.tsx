@@ -57,13 +57,6 @@ const LoginPage: React.FC<Props> = ({ onLogin }) => {
             
             <div className="relative z-10">
                 <div className="flex items-center gap-5 mb-12">
-                    <div className="relative group cursor-default">
-                        <div className="absolute -inset-2 bg-gradient-to-r from-pink-600 to-violet-600 rounded-2xl blur-lg opacity-40 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-                        <div className="relative bg-gradient-to-br from-indigo-900 to-slate-900 p-4 rounded-2xl border border-white/10 shadow-2xl flex items-center justify-center">
-                            <Hexagon size={36} className="text-indigo-400 group-hover:text-indigo-300 transition-colors" strokeWidth={1.5} />
-                            <Sparkles size={18} className="text-amber-300 absolute -top-2 -right-2 animate-bounce delay-700" fill="currentColor" />
-                        </div>
-                    </div>
                     <div className="flex flex-col">
                         <span className="font-display font-bold text-2xl tracking-tight leading-none bg-clip-text text-transparent bg-gradient-to-r from-white to-indigo-200">Sistem KGB Terpadu</span>
                         <span className="font-display text-sm font-medium text-indigo-300 tracking-wide mt-1 uppercase">BSKJI Kementerian Perindustrian</span>
