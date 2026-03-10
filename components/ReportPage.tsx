@@ -257,24 +257,18 @@ const ReportPage: React.FC<Props> = ({ employees, currentUser }) => {
       <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden print:shadow-none print:border-none print:rounded-none print:overflow-visible">
           
           {/* Header Print View Only - Formal Style */}
-          <div className="hidden print:block mb-8 text-center text-black">
-             <div className="flex flex-col items-center mb-4">
-                <h1 className="text-xl font-bold uppercase tracking-widest">PEMERINTAH KABUPATEN / KOTA</h1>
-                <h2 className="text-2xl font-extrabold uppercase tracking-tight">DINAS KESEHATAN / BKPSDM</h2>
-                <p className="text-xs font-medium italic">Jl. Alamat Kantor No. XX, Kota, Provinsi - Kode Pos</p>
-             </div>
-             <div className="border-b-4 border-black w-full mb-1"></div>
-             <div className="border-b border-black w-full mb-6"></div>
-
-             <h2 className="text-lg font-bold uppercase tracking-wider mb-1">
+          <div className="hidden print:block mb-6 text-center text-black">
+             <h2 className="text-xl font-bold uppercase tracking-wider mb-1">
                 DAFTAR NOMINATIF KENAIKAN GAJI BERKALA (KGB)
              </h2>
-             <h3 className="text-md font-bold uppercase mb-2">
+             <h3 className="text-lg font-bold uppercase mb-2">
                 PEGAWAI NEGERI SIPIL & PPPK
              </h3>
              <p className="text-sm font-medium">
                 {viewMode === 'monthly' ? `Periode: ${selectedMonth === 'All' ? 'Semua Bulan' : selectedMonth} ${selectedYear}` : 'Riwayat Proses (TMT Descending)'}
              </p>
+             <div className="mt-4 border-b-2 border-black w-full"></div>
+             <div className="border-b border-black w-full mt-0.5 mb-6"></div>
           </div>
 
           <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 print:hidden">
@@ -372,15 +366,11 @@ const ReportPage: React.FC<Props> = ({ employees, currentUser }) => {
       </div>
       
       {/* Print Signature Area (Visible only on print) */}
-      <div className="hidden print:flex flex-col items-end mt-16 pr-8 page-break-inside-avoid text-black">
-          <div className="text-left w-64">
-              <p className="mb-1">Ditetapkan di: ...........................</p>
-              <p className="mb-6">Tanggal: ...........................</p>
-          </div>
-          <div className="text-center w-64">
-              <p className="mb-20 font-bold">Mengetahui,<br/>Kepala Bidang Mutasi & Promosi</p>
-              <p className="font-bold underline">......................................................</p>
-              <p className="font-medium mt-1">NIP. ...........................................</p>
+      <div className="hidden print:flex justify-end mt-16 pr-8 page-break-inside-avoid">
+          <div className="text-center w-64 text-black">
+              <p className="mb-20">Mengetahui,<br/>Ketua TIM Kerja OSDM</p>
+              <p className="font-bold underline">_______________________</p>
+              <p>NIP. ...........................</p>
           </div>
       </div>
     </div>
