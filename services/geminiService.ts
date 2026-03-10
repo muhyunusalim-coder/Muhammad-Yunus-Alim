@@ -61,48 +61,67 @@ export const analyzeEmployeeKGB = async (employee: Employee, promptType: 'draft_
 export const chatWithData = async (query: string, employees: Employee[]) => {
     try {
         const apiKey = process.env.API_KEY;
-        if (!apiKey) return "API Key missing.";
+        if (!apiKey) return "Aduh, maaf ya, kunci akses AI-nya belum terpasang nih. Hubungi admin ya! 🙏";
     
         const ai = new GoogleGenAI({ apiKey });
         const model = "gemini-3-flash-preview";
 
-        // Summarize data for context (limit to avoid token limits if list is huge)
-        const summary = employees.slice(0, 30).map(e => `- ${e.nama} (${e.pangkat}): TMT ${e.tmt}`).join('\n');
+        // Provide a more comprehensive summary of the data
+        // If the list is very long, we still need to be careful, but let's try to include more or key info
+        const employeeList = employees.map(e => `${e.nama} (NIP: ${e.nip}, Pangkat: ${e.pangkat}, Unit: ${e.unitKerja}, TMT: ${e.tmt}, Gaji: ${formatCurrency(e.gajiBaru)})`).join('\n');
+        
         const stats = {
             total: employees.length,
+            pnsCount: employees.filter(e => e.statusKepegawaian === 'PNS').length,
+            pppkCount: employees.filter(e => e.statusKepegawaian === 'PPPK').length,
             totalIncrease: employees.reduce((acc, curr) => acc + (curr.gajiBaru - curr.gajiLama), 0)
         };
 
         const context = `
-            Peran: Kamu adalah "Asisten Sahabat KGB".
+            Identitas: Kamu adalah "Kakak KGB", asisten AI yang sangat ramah, hangat, ceria, dan membantu untuk sistem Kenaikan Gaji Berkala (KGB).
             
-            ATURAN UTAMA:
-            1. JAWAB DENGAN SINGKAT & PADAT. Usahakan maksimal 2-3 kalimat saja. Langsung ke intinya.
-            2. JANGAN gunakan markdown (tanda bintang ** dilarang). Gunakan teks biasa.
-            3. Gunakan bahasa Indonesia yang santai, akrab, dan bersahabat (seperti teman kantor).
-            4. Gunakan emoji secukupnya (😊, 👍).
+            Gaya Bahasa:
+            - Sangat hangat, sopan, dan bersahabat (seperti rekan kerja yang sangat baik).
+            - Gunakan sapaan seperti "Kak", "Bapak", atau "Ibu" jika terasa pas, atau gunakan bahasa "kita".
+            - Berikan jawaban yang solutif dan menyemangati.
+            - Gunakan emoji agar suasana terasa lebih hidup dan ramah (😊, ✨, 🙌, 💼).
 
-            Data Pegawai (Sampel):
-            ${summary}
+            Tugas Utama:
+            - Menjawab pertanyaan seputar data pegawai yang ada di sistem.
+            - Memberikan informasi statistik kepegawaian.
+            - Membantu menjelaskan jadwal KGB.
+
+            Data Pegawai Lengkap:
+            ${employeeList}
             
-            Statistik Global:
-            Total Pegawai: ${stats.total}
-            Total Kenaikan Gaji: ${formatCurrency(stats.totalIncrease)}
+            Statistik Sistem:
+            - Total Pegawai: ${stats.total}
+            - Jumlah PNS: ${stats.pnsCount}
+            - Jumlah PPPK: ${stats.pppkCount}
+            - Total Anggaran Kenaikan Gaji: ${formatCurrency(stats.totalIncrease)}
+
+            Aturan Teknis:
+            1. JAWAB DENGAN CEPAT DAN TEPAT.
+            2. JANGAN gunakan markdown (tanda bintang ** dilarang). Gunakan teks biasa saja.
+            3. Jika data tidak ditemukan, jawab dengan sangat sopan: "Wah, maaf banget ya Kak, data yang dicari belum ketemu di catatan aku. Coba cek lagi di tabel utama atau tanya admin ya! 😊"
+            4. Jaga kerahasiaan data sensitif jika dirasa perlu, tapi berikan info umum yang diminta.
 
             Pertanyaan User: "${query}"
-
-            Panduan Jawaban:
-            - Jika ditanya data spesifik, langsung berikan datanya tanpa pembukaan panjang lebar.
-            - Jika data tidak ada di sampel, bilang "Datanya nggak ada di sampel saya nih, coba cek tabel utama ya."
         `;
 
         const response = await ai.models.generateContent({
             model: model,
             contents: context,
+            config: {
+                temperature: 0.7,
+                topP: 0.95,
+                topK: 40
+            }
         });
 
         return response.text;
     } catch (error) {
-        return "Waduh, maaf, sistem lagi sibuk banget nih.";
+        console.error("Chat Error:", error);
+        return "Aduh, maaf ya Kak, sepertinya aku lagi agak pusing nih (sistem sibuk). Coba tanya lagi sebentar lagi ya! 🙏✨";
     }
 }

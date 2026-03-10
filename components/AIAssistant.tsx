@@ -17,7 +17,7 @@ interface Message {
 const AIAssistant: React.FC<Props> = ({ employees }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-      { id: 'welcome', role: 'assistant', text: 'Halo! Saya asisten virtual KGB. Ada yang bisa saya bantu mengenai data pegawai atau peraturan gaji?' }
+      { id: 'welcome', role: 'assistant', text: 'Halo Kak! ✨ Saya Kakak KGB, asisten virtual ceria Anda. Ada yang bisa saya bantu hari ini? Saya bisa bantu cek data pegawai, statistik, atau jadwal KGB lho! 😊' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -52,7 +52,7 @@ const AIAssistant: React.FC<Props> = ({ employees }) => {
       <button 
         onClick={() => setIsOpen(true)}
         className={`fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all z-40 flex items-center justify-center ${isOpen ? 'hidden' : 'flex'} print:hidden`}
-        title="Tanya AI"
+        title="Tanya Kakak KGB ✨"
       >
         <Bot size={28} />
       </button>
@@ -67,8 +67,8 @@ const AIAssistant: React.FC<Props> = ({ employees }) => {
                     <Bot size={20} />
                 </div>
                 <div>
-                    <h3 className="font-bold text-sm">Asisten Kepegawaian</h3>
-                    <p className="text-[10px] text-blue-100 opacity-90">Online • Powered by Gemini</p>
+                    <h3 className="font-bold text-sm">Kakak KGB AI ✨</h3>
+                    <p className="text-[10px] text-blue-100 opacity-90">Siap membantu Kakak! • Online</p>
                 </div>
             </div>
             <button onClick={() => setIsOpen(false)} className="text-white/80 hover:text-white transition">
