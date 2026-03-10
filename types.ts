@@ -1,3 +1,9 @@
+export interface SalaryHistory {
+  date: string;
+  amount: number;
+  description: string;
+}
+
 export interface Employee {
   id: string;
   no: string;
@@ -13,6 +19,7 @@ export interface Employee {
   unitKerja: string;
   status: 'Pending' | 'Processed' | 'Upcoming';
   statusKeterangan?: string; 
+  salaryHistory?: SalaryHistory[];
 }
 
 export interface DashboardStats {

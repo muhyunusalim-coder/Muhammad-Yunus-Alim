@@ -124,6 +124,12 @@ const parseCSV = (csvText: string): Employee[] => {
         mkFinal = clean(values[idxMasaKerja] || '-');
     }
 
+    // Mock salary history for demonstration
+    const salaryHistory = [
+      { date: '2022-03-01', amount: parseMoney(clean(values[idxGajiLama])) - 100000, description: 'KGB 2022' },
+      { date: '2024-03-01', amount: parseMoney(clean(values[idxGajiLama])), description: 'KGB 2024' }
+    ];
+
     return {
       id: `emp-${index}-${Date.now()}`,
       no: clean(values[idxNo] || (index + 1).toString()),
@@ -138,7 +144,8 @@ const parseCSV = (csvText: string): Employee[] => {
       tmt: tmtStr || '-',
       unitKerja: clean(values[idxUnit] || '-'),
       status: appStatus,
-      statusKeterangan: rawStatus
+      statusKeterangan: rawStatus,
+      salaryHistory: salaryHistory
     };
   });
 };
@@ -165,6 +172,12 @@ const mapMockData = (mock: any[]): Employee[] => {
 
     const pangkatStr = m.Pangkat || '-';
 
+    // Mock salary history for demonstration
+    const salaryHistory = [
+      { date: '2022-03-01', amount: parseInt(m["Gaji Lama"]) - 100000, description: 'KGB 2022' },
+      { date: '2024-03-01', amount: parseInt(m["Gaji Lama"]), description: 'KGB 2024' }
+    ];
+
     return {
         id: `mock-${i}`,
         no: m.No,
@@ -179,7 +192,8 @@ const mapMockData = (mock: any[]): Employee[] => {
         tmt: m["TMT KGB Baru"] || m["TMT"], 
         unitKerja: m["Unit Kerja"],
         status: appStatus,
-        statusKeterangan: rawStatus
+        statusKeterangan: rawStatus,
+        salaryHistory: salaryHistory
     };
   });
 };
