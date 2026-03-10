@@ -1,14 +1,29 @@
 
-import React, { useState, useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { Filter, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 import { Employee } from '../types';
+
+// Lazy load chart components
+const MonthlyBarChart = lazy(() => import('./charts/MonthlyBarChart'));
+const StatusPieChart = lazy(() => import('./charts/StatusPieChart'));
 
 interface Props {
   employees: Employee[];
   onMonthClick?: (month: string, year: number) => void;
   selectedMonth?: string | null;
 }
+
+// Skeleton loader for charts
+const ChartSkeleton = () => (
+  <div className="w-full h-full flex items-center justify-center bg-slate-50/50 rounded-3xl animate-pulse border border-slate-100/50">
+    <div className="relative flex items-center justify-center">
+        <div className="w-32 h-32 border-4 border-slate-100 border-t-indigo-200 rounded-full animate-spin"></div>
+        <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-16 h-16 bg-slate-100 rounded-full"></div>
+        </div>
+    </div>
+  </div>
+);
 
 const KGBCharts: React.FC<Props> = ({ employees, onMonthClick, selectedMonth }) => {
   const [filterYear, setFilterYear] = useState<number>(new Date().getFullYear());
@@ -101,44 +116,14 @@ const KGBCharts: React.FC<Props> = ({ employees, onMonthClick, selectedMonth }) 
         </div>
 
         <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6366f1" stopOpacity={0.8}/>
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity={0.3}/>
-                  </linearGradient>
-                  <linearGradient id="barGradientActive" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#312e81" stopOpacity={1}/>
-                    <stop offset="100%" stopColor="#312e81" stopOpacity={0.6}/>
-                  </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={12} tick={{fill: '#94a3b8', fontWeight: 600}} dy={10} />
-              <YAxis axisLine={false} tickLine={false} fontSize={12} allowDecimals={false} tick={{fill: '#94a3b8'}} />
-              <Tooltip 
-                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', padding: '16px', fontFamily: 'Inter' }}
-                cursor={{ fill: '#f8fafc', radius: 8 }}
-                formatter={(value: number) => [<span className="font-bold text-indigo-600">{value}</span>, 'Pegawai']}
-                labelStyle={{ color: '#64748b', fontWeight: 600, marginBottom: '0.5rem' }}
-              />
-              <Bar 
-                dataKey="Pegawai" 
-                radius={[8, 8, 8, 8]} 
-                barSize={40}
-                onClick={(data) => onMonthClick && onMonthClick(data.name, filterYear)}
-                style={{ cursor: 'pointer' }}
-              >
-                {monthlyData.map((entry, index) => (
-                    <Cell 
-                        key={`cell-${index}`} 
-                        fill={entry.name === selectedMonth ? 'url(#barGradientActive)' : 'url(#barGradient)'} 
-                        className="transition-all duration-300 hover:opacity-80"
-                    />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <Suspense fallback={<ChartSkeleton />}>
+            <MonthlyBarChart 
+              data={monthlyData} 
+              onMonthClick={onMonthClick} 
+              selectedMonth={selectedMonth} 
+              filterYear={filterYear} 
+            />
+          </Suspense>
         </div>
       </div>
 
@@ -161,44 +146,9 @@ const KGBCharts: React.FC<Props> = ({ employees, onMonthClick, selectedMonth }) 
                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Total</span>
                 </div>
 
-                <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                        <Pie
-                            data={statusData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={75}
-                            outerRadius={95}
-                            paddingAngle={8}
-                            dataKey="value"
-                            labelLine={false}
-                            stroke="none"
-                            cornerRadius={6}
-                        >
-                            {statusData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} className="drop-shadow-sm" />
-                            ))}
-                        </Pie>
-                        <Tooltip 
-                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', padding: '8px 12px', fontFamily: 'Inter', fontSize: '12px' }}
-                            itemStyle={{ color: '#1e293b', fontWeight: 600 }}
-                            formatter={(value: number, name: string) => {
-                                const percent = totalASN > 0 ? ((value / totalASN) * 100).toFixed(1) : 0;
-                                return [`${value} Orang (${percent}%)`, name];
-                            }}
-                        />
-                        <Legend 
-                            verticalAlign="bottom" 
-                            height={36} 
-                            iconType="circle"
-                            formatter={(value, entry: any) => {
-                                const count = entry.payload.value;
-                                const percent = totalASN > 0 ? ((count / totalASN) * 100).toFixed(1) : 0;
-                                return <span className="text-xs font-bold text-slate-500 ml-1 uppercase tracking-wide">{value}: {count} ({percent}%)</span>;
-                            }}
-                        />
-                    </PieChart>
-                </ResponsiveContainer>
+                <Suspense fallback={<ChartSkeleton />}>
+                    <StatusPieChart data={statusData} totalASN={totalASN} />
+                </Suspense>
             </div>
       </div>
     </div>

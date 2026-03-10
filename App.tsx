@@ -296,6 +296,10 @@ function App() {
     };
   }, [employees]);
 
+  const handleDeleteEmployee = (id: string) => {
+    setEmployees(prev => prev.filter(emp => emp.id !== id));
+  };
+
   if (!isAuthenticated) {
       return <LoginPage onLogin={handleLogin} />;
   }
@@ -573,6 +577,7 @@ function App() {
                     <EmployeeTable 
                         employees={displayedEmployees} 
                         onStatusToggle={handleStatusToggle}
+                        onDeleteEmployee={handleDeleteEmployee}
                         currentUser={currentUser}
                     />
                     </>

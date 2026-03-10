@@ -26,7 +26,6 @@ export interface DashboardStats {
   totalEmployees: number;
   upcomingKGB: number;
   processedKGB: number;
-  currentMonthKGB: number;
 }
 
 export interface ChartData {
