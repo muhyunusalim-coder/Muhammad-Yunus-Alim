@@ -98,6 +98,7 @@ function App() {
   const [quote, setQuote] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentView, setCurrentView] = useState<'dashboard' | 'faq' | 'statistics' | 'report'>('dashboard');
+  const [isLayananKgbExpanded, setIsLayananKgbExpanded] = useState(true);
   const [notification, setNotification] = useState<string | null>(null);
 
   // Auto-clear notification
@@ -380,9 +381,25 @@ function App() {
             </div>
             
             <MenuItem view="dashboard" icon={LayoutDashboard} label="Dashboard" colorClass="text-indigo-400" />
-            <MenuItem view="statistics" icon={BarChart2} label="Statistik ASN" colorClass="text-emerald-400" />
-            <MenuItem view="report" icon={ClipboardList} label="Laporan & Rekap" colorClass="text-amber-400" />
-            <MenuItem view="faq" icon={BookOpen} label="Pusat Informasi" colorClass="text-cyan-400" />
+            
+            <div className="space-y-1.5">
+                <button 
+                    onClick={() => setIsLayananKgbExpanded(!isLayananKgbExpanded)}
+                    className="w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl font-medium text-slate-400 hover:bg-slate-800/50 hover:text-white transition-all group"
+                >
+                    <LayoutDashboard size={20} className="text-purple-400" />
+                    <span className="text-sm font-semibold tracking-wide">Layanan KGB</span>
+                    <ChevronRight size={16} className={`ml-auto transition-transform ${isLayananKgbExpanded ? 'rotate-90' : ''}`} />
+                </button>
+                
+                {isLayananKgbExpanded && (
+                    <div className="pl-6 space-y-1.5">
+                        <MenuItem view="statistics" icon={BarChart2} label="Statistik ASN" colorClass="text-emerald-400" />
+                        <MenuItem view="report" icon={ClipboardList} label="Laporan & Rekap" colorClass="text-amber-400" />
+                        <MenuItem view="faq" icon={BookOpen} label="Pusat Informasi" colorClass="text-cyan-400" />
+                    </div>
+                )}
+            </div>
 
             <div className="px-4 mb-3 mt-8">
                 <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">Bantuan</p>
