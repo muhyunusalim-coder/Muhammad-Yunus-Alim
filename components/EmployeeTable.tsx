@@ -1,6 +1,6 @@
 
-import React, { useState, useMemo } from 'react';
-import { Search, Briefcase, Clock, AlertTriangle, CheckCircle2, BadgeCheck, User, X, Building2, TrendingUp, Calendar, AlertCircle, ChevronRight, CalendarRange, Trash2 } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Search, Briefcase, Clock, AlertTriangle, CheckCircle2, BadgeCheck, User, X, Building2, TrendingUp, Calendar, AlertCircle, ChevronRight, CalendarRange, Trash2, ChevronLeft, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Employee } from '../types';
 
 interface Props {
@@ -12,13 +12,17 @@ interface Props {
 
 const ADMIN_NIP = '199601192025061007';
 
-const EmployeeTable: React.FC<Props> = ({ employees, onStatusToggle, onDeleteEmployee, currentUser }) => {
+const EmployeeTable = React.memo(({ employees, onStatusToggle, onDeleteEmployee, currentUser }: Props) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [monthFilter, setMonthFilter] = useState<string>('All'); // Changed from statusFilter to monthFilter
   const [unitFilter, setUnitFilter] = useState<string>('All');
   const [typeFilter, setTypeFilter] = useState<string>('All');
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
   const currentYear = new Date().getFullYear();
@@ -85,44 +89,62 @@ const EmployeeTable: React.FC<Props> = ({ employees, onStatusToggle, onDeleteEmp
     return Array.from(units).sort();
   }, [employees]);
 
-  const filtered = employees.filter(emp => {
-    const matchesSearch = emp.nama.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          emp.nip.includes(searchTerm) ||
-                          emp.jabatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          emp.unitKerja.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesUnit = unitFilter === 'All' || emp.unitKerja === unitFilter;
-    const matchesType = typeFilter === 'All' || emp.statusKepegawaian === typeFilter;
-    
-    // Filter Periode (Bulan di Tahun Berjalan)
-    let matchesPeriod = true;
-    if (monthFilter !== 'All') {
-        let tmtDate: Date | null = null;
-        if (emp.tmt.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            tmtDate = new Date(emp.tmt);
-        } else if (emp.tmt.match(/^\d{1,2}[-/]\d{1,2}[-/]\d{4}$/)) {
-            const parts = emp.tmt.split(/[-/]/);
-            tmtDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-        }
+  const filtered = useMemo(() => {
+    return employees.filter(emp => {
+      const matchesSearch = emp.nama.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            emp.nip.includes(searchTerm) ||
+                            emp.jabatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            emp.unitKerja.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesUnit = unitFilter === 'All' || emp.unitKerja === unitFilter;
+      const matchesType = typeFilter === 'All' || emp.statusKepegawaian === typeFilter;
+      
+      // Filter Periode (Bulan di Tahun Berjalan)
+      let matchesPeriod = true;
+      if (monthFilter !== 'All') {
+          let tmtDate: Date | null = null;
+          if (emp.tmt.match(/^\d{4}-\d{2}-\d{2}$/)) {
+              tmtDate = new Date(emp.tmt);
+          } else if (emp.tmt.match(/^\d{1,2}[-/]\d{1,2}[-/]\d{4}$/)) {
+              const parts = emp.tmt.split(/[-/]/);
+              tmtDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+          }
 
-        if (tmtDate && !isNaN(tmtDate.getTime())) {
-            const tmtMonthIndex = tmtDate.getMonth();
-            const tmtYear = tmtDate.getFullYear();
-            const selectedMonthIndex = months.indexOf(monthFilter);
-            
-            // Logic: Tampilkan hanya jika Tahun = Tahun Ini DAN Bulan = Bulan Terpilih
-            if (tmtYear === currentYear && tmtMonthIndex === selectedMonthIndex) {
-                matchesPeriod = true;
-            } else {
-                matchesPeriod = false;
-            }
-        } else {
-            matchesPeriod = false;
-        }
-    }
+          if (tmtDate && !isNaN(tmtDate.getTime())) {
+              const tmtMonthIndex = tmtDate.getMonth();
+              const tmtYear = tmtDate.getFullYear();
+              const selectedMonthIndex = months.indexOf(monthFilter);
+              
+              // Logic: Tampilkan hanya jika Tahun = Tahun Ini DAN Bulan = Bulan Terpilih
+              if (tmtYear === currentYear && tmtMonthIndex === selectedMonthIndex) {
+                  matchesPeriod = true;
+              } else {
+                  matchesPeriod = false;
+              }
+          } else {
+              matchesPeriod = false;
+          }
+      }
 
-    return matchesSearch && matchesUnit && matchesType && matchesPeriod;
-  });
+      return matchesSearch && matchesUnit && matchesType && matchesPeriod;
+    });
+  }, [employees, searchTerm, unitFilter, typeFilter, monthFilter, currentYear, months]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, monthFilter, unitFilter, typeFilter]);
+
+  // Paginated Data
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginatedEmployees = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filtered.slice(startIndex, startIndex + itemsPerPage);
+  }, [filtered, currentPage, itemsPerPage]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
 
   return (
     <>
@@ -209,15 +231,15 @@ const EmployeeTable: React.FC<Props> = ({ employees, onStatusToggle, onDeleteEmp
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 text-sm">
-              {filtered.length > 0 ? (
-                filtered.map((emp, index) => (
+              {paginatedEmployees.length > 0 ? (
+                paginatedEmployees.map((emp, index) => (
                   <tr 
                     key={emp.id} 
                     onClick={() => setSelectedEmployee(emp)}
                     className="hover:bg-indigo-50/30 transition-colors group cursor-pointer active:bg-indigo-50"
                   >
                     <td className="px-6 py-5 text-center text-slate-400 font-medium text-xs hidden md:table-cell">
-                      {index + 1}
+                      {(currentPage - 1) * itemsPerPage + index + 1}
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
@@ -373,9 +395,79 @@ const EmployeeTable: React.FC<Props> = ({ employees, onStatusToggle, onDeleteEmp
           </table>
         </div>
         
-        <div className="bg-slate-50 p-4 border-t border-slate-200 text-center flex justify-between px-8">
-          <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Data: {filtered.length}</span>
-          <span className="text-xs text-slate-400 font-medium">Menampilkan hasil pencarian</span>
+        <div className="bg-slate-50 p-4 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between px-6 md:px-8 gap-4">
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Data: {filtered.length}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-slate-400 font-bold uppercase">Tampilkan:</span>
+              <select 
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="bg-white border border-slate-200 rounded-lg text-[10px] font-bold px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              >
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                title="Halaman Pertama"
+              >
+                <ChevronsLeft size={16} />
+              </button>
+              <button 
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                title="Halaman Sebelumnya"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              
+              <div className="flex items-center gap-1 px-2">
+                <span className="text-xs font-bold text-slate-600">Halaman</span>
+                <input 
+                  type="number" 
+                  min={1} 
+                  max={totalPages}
+                  value={currentPage}
+                  onChange={(e) => handlePageChange(Number(e.target.value))}
+                  className="w-12 text-center py-1 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                />
+                <span className="text-xs font-bold text-slate-400">dari {totalPages}</span>
+              </div>
+
+              <button 
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                title="Halaman Berikutnya"
+              >
+                <ChevronRight size={16} />
+              </button>
+              <button 
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                title="Halaman Terakhir"
+              >
+                <ChevronsRight size={16} />
+              </button>
+            </div>
+          )}
+
+          <span className="text-xs text-slate-400 font-medium hidden md:block">
+            Menampilkan {Math.min(filtered.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(filtered.length, currentPage * itemsPerPage)}
+          </span>
         </div>
       </div>
 
@@ -584,6 +676,6 @@ const EmployeeTable: React.FC<Props> = ({ employees, onStatusToggle, onDeleteEmp
       )}
     </>
   );
-};
+});
 
 export default EmployeeTable;

@@ -223,7 +223,19 @@ function App() {
       currentEmployees.map(emp => {
         if (emp.id === id) {
           const newStatus = emp.status === 'Processed' ? 'Upcoming' : 'Processed';
-          return { ...emp, status: newStatus };
+          
+          const updatedEmp = { ...emp, status: newStatus };
+          
+          if (newStatus === 'Processed') {
+            const historyEntry = {
+              date: new Date().toISOString().split('T')[0],
+              amount: emp.gajiBaru,
+              description: `KGB ${new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}`
+            };
+            updatedEmp.salaryHistory = [...(emp.salaryHistory || []), historyEntry];
+          }
+          
+          return updatedEmp;
         }
         return emp;
       })
@@ -275,19 +287,22 @@ function App() {
     const nextMonth = nextMonthDate.getMonth();
     const nextYear = nextMonthDate.getFullYear();
 
-    // KGB Bulan Berjalan (Current Month)
-    const currentMonthCount = employees.filter(e => {
-        const tmtDate = getTmtDate(e.tmt);
-        if (!tmtDate || isNaN(tmtDate.getTime())) return false;
-        return tmtDate.getMonth() === currentMonth && tmtDate.getFullYear() === currentYear;
-    }).length;
+    let currentMonthCount = 0;
+    let nextMonthCount = 0;
 
-    // KGB Akan Datang (Next Month)
-    const nextMonthCount = employees.filter(e => {
-        const tmtDate = getTmtDate(e.tmt);
-        if (!tmtDate || isNaN(tmtDate.getTime())) return false;
-        return tmtDate.getMonth() === nextMonth && tmtDate.getFullYear() === nextYear;
-    }).length;
+    employees.forEach(e => {
+      const tmtDate = getTmtDate(e.tmt);
+      if (!tmtDate || isNaN(tmtDate.getTime())) return;
+
+      const m = tmtDate.getMonth();
+      const y = tmtDate.getFullYear();
+
+      if (m === currentMonth && y === currentYear) {
+        currentMonthCount++;
+      } else if (m === nextMonth && y === nextYear) {
+        nextMonthCount++;
+      }
+    });
 
     return {
       totalEmployees: employees.length,
@@ -337,10 +352,13 @@ function App() {
       <aside className={`fixed inset-y-0 left-0 z-40 w-72 bg-[#0f172a] text-white transform transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) md:translate-x-0 md:static shadow-2xl flex flex-col border-r border-slate-800/50 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} print:hidden`}>
         {/* Brand Area */}
         <div className="px-6 pt-8 pb-6">
-            <div className="flex flex-col gap-2 mb-2">
+            <div className="flex items-center gap-3.5 mb-2">
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-500/20 ring-1 ring-white/20">
+                    L
+                </div>
                 <div>
                     <h1 className="font-display font-bold text-xl tracking-tight text-white leading-none">Layanan KGB</h1>
-                    <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em] mt-1 block opacity-80">BSKJI Kemenperin</span>
+                    <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em] mt-1 block opacity-80">Enterprise</span>
                 </div>
             </div>
         </div>

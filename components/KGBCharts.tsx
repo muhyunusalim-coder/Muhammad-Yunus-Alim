@@ -5,7 +5,7 @@ import { Employee } from '../types';
 
 // Lazy load chart components
 const MonthlyBarChart = lazy(() => import('./charts/MonthlyBarChart'));
-const StatusPieChart = lazy(() => import('./charts/StatusPieChart'));
+const StaticStatusPieChart = lazy(() => import('./charts/StaticStatusPieChart'));
 
 interface Props {
   employees: Employee[];
@@ -147,7 +147,7 @@ const KGBCharts: React.FC<Props> = ({ employees, onMonthClick, selectedMonth }) 
                 </div>
 
                 <Suspense fallback={<ChartSkeleton />}>
-                    <StatusPieChart data={statusData} totalASN={totalASN} />
+                    <StaticStatusPieChart data={statusData} totalASN={totalASN} />
                 </Suspense>
             </div>
       </div>

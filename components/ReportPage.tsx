@@ -62,8 +62,23 @@ const ReportPage: React.FC<Props> = ({ employees, currentUser }) => {
             return true;
         });
     } else {
-        // Mode History: Hanya tampilkan yang statusnya 'Processed'
-        data = data.filter(emp => emp.status === 'Processed');
+        // Mode History: Tampilkan yang TMT-nya cocok dengan filter
+        data = data.filter(emp => {
+            // Cek apakah TMT 2 tahun lalu cocok dengan filter
+            const tmtDate = getTmtDate(emp.tmt);
+            let isTmtMatch = false;
+            if (tmtDate) {
+                const prevKGBDate = new Date(tmtDate);
+                prevKGBDate.setFullYear(prevKGBDate.getFullYear() - 2);
+                
+                const prevYear = prevKGBDate.getFullYear();
+                const prevMonthIdx = prevKGBDate.getMonth();
+                
+                isTmtMatch = prevYear === selectedYear && (selectedMonth === 'All' || months[prevMonthIdx] === selectedMonth);
+            }
+            
+            return isTmtMatch;
+        });
         
         // Sort descending by TMT (Terbaru/Masa Depan ke Lama)
         data.sort((a, b) => {
@@ -99,8 +114,7 @@ const ReportPage: React.FC<Props> = ({ employees, currentUser }) => {
             "Gaji Lama": hasAccess ? emp.gajiLama : "******",
             "Gaji Baru": hasAccess ? emp.gajiBaru : "******",
             "Masa Kerja": emp.masaKerja,
-            "TMT KGB": emp.tmt,
-            "Status": emp.status === 'Processed' ? 'Selesai' : 'Belum di Proses'
+            "TMT KGB": emp.tmt
           };
         });
 
@@ -110,7 +124,7 @@ const ReportPage: React.FC<Props> = ({ employees, currentUser }) => {
         const wscols = [
             { wch: 5 }, { wch: 30 }, { wch: 20 }, { wch: 15 }, 
             { wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 15 }, 
-            { wch: 15 }, { wch: 15 }, { wch: 15 }
+            { wch: 15 }, { wch: 15 }
         ];
         ws['!cols'] = wscols;
 
@@ -238,8 +252,35 @@ const ReportPage: React.FC<Props> = ({ employees, currentUser }) => {
                 </div>
              </div>
           ) : (
-            <div className="flex items-center justify-between gap-4">
-                 <div className="relative group flex-1">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="relative group">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <select 
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(Number(e.target.value))}
+                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    >
+                        {[2023, 2024, 2025, 2026, 2027, 2028].map(y => (
+                            <option key={y} value={y}>{y}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="relative group">
+                    <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <select 
+                        value={selectedMonth}
+                        onChange={(e) => setSelectedMonth(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    >
+                        <option value="All">Semua Bulan</option>
+                        {months.map(m => (
+                            <option key={m} value={m}>{m}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="relative group">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                     <input
                         type="text"
@@ -301,8 +342,7 @@ const ReportPage: React.FC<Props> = ({ employees, currentUser }) => {
                           <th className="px-6 py-4 border-r border-slate-100 print:border print:border-black print:px-2 print:py-2">Gaji Lama</th>
                           <th className="px-6 py-4 border-r border-slate-100 print:border print:border-black print:px-2 print:py-2">Gaji Baru</th>
                           <th className="px-6 py-4 border-r border-slate-100 print:border print:border-black print:px-2 print:py-2">Masa Kerja</th>
-                          <th className="px-6 py-4 border-r border-slate-100 print:border print:border-black print:px-2 print:py-2">TMT</th>
-                          <th className="px-6 py-4 text-center print:border print:border-black print:px-2 print:py-2">Status</th>
+                          <th className="px-6 py-4 text-center print:border print:border-black print:px-2 print:py-2">TMT</th>
                       </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-sm print:divide-black">
@@ -334,7 +374,7 @@ const ReportPage: React.FC<Props> = ({ employees, currentUser }) => {
                                   <td className="px-6 py-4 border-r border-slate-100 print:border print:border-black print:text-black print:px-2 print:py-2">
                                       {emp.masaKerja}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap border-r border-slate-100 print:border print:border-black print:text-black print:px-2 print:py-2">
+                                  <td className="px-6 py-4 whitespace-nowrap text-center print:border print:border-black print:text-black print:px-2 print:py-2">
                                       <div className={`font-mono font-medium px-2 py-1 rounded border inline-block print:bg-transparent print:border-none print:p-0 ${
                                           viewMode === 'history' && (getTmtDate(emp.tmt)?.getFullYear() || 0) >= 2026 
                                           ? 'bg-indigo-50 text-indigo-700 border-indigo-200' 
@@ -343,22 +383,11 @@ const ReportPage: React.FC<Props> = ({ employees, currentUser }) => {
                                           {emp.tmt}
                                       </div>
                                   </td>
-                                  <td className="px-6 py-4 text-center print:border print:border-black print:px-2 print:py-2">
-                                      {emp.status === 'Processed' ? (
-                                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 print:bg-transparent print:text-black print:font-normal print:p-0">
-                                              Selesai
-                                          </span>
-                                      ) : (
-                                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 print:bg-transparent print:text-black print:font-normal print:p-0">
-                                              Belum di Proses
-                                          </span>
-                                      )}
-                                  </td>
                               </tr>
                           )})
                       ) : (
                           <tr>
-                              <td colSpan={8} className="px-6 py-16 text-center text-slate-400 print:border print:border-black print:text-black print:py-8">
+                              <td colSpan={7} className="px-6 py-16 text-center text-slate-400 print:border print:border-black print:text-black print:py-8">
                                   <div className="flex flex-col items-center justify-center gap-2">
                                       <Search size={32} className="opacity-20 print:hidden" />
                                       <p className="font-medium">Tidak ada data ditemukan untuk periode ini.</p>
