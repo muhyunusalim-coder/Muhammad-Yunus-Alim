@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useMemo, Suspense, lazy } from 'react';
-import { LayoutDashboard, Calendar, X, Activity, LogOut, MessageCircle, Quote, Sparkles, User, CalendarCheck, Clock, AlertTriangle, Menu, BookOpen, BarChart2, ClipboardList, RefreshCw, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Calendar, X, Activity, LogOut, MessageCircle, Quote, Sparkles, User, CalendarCheck, Clock, AlertTriangle, Menu, BookOpen, BarChart2, ClipboardList, RefreshCw, ChevronRight, Briefcase } from 'lucide-react';
 import DashboardStats from './components/DashboardStats';
 import EmployeeTable from './components/EmployeeTable';
 import AIAssistant from './components/AIAssistant';
@@ -387,7 +387,7 @@ function App() {
                     onClick={() => setIsLayananKgbExpanded(!isLayananKgbExpanded)}
                     className="w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl font-medium text-slate-400 hover:bg-slate-800/50 hover:text-white transition-all group"
                 >
-                    <LayoutDashboard size={20} className="text-purple-400" />
+                    <Briefcase size={20} className="text-purple-400" />
                     <span className="text-sm font-semibold tracking-wide">Layanan KGB</span>
                     <ChevronRight size={16} className={`ml-auto transition-transform ${isLayananKgbExpanded ? 'rotate-90' : ''}`} />
                 </button>
