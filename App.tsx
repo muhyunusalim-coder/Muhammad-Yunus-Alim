@@ -98,6 +98,15 @@ function App() {
   const [quote, setQuote] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentView, setCurrentView] = useState<'dashboard' | 'faq' | 'statistics' | 'report'>('dashboard');
+  const [notification, setNotification] = useState<string | null>(null);
+
+  // Auto-clear notification
+  React.useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
   const [greeting, setGreeting] = useState('Selamat Pagi');
   const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
 
@@ -206,6 +215,7 @@ function App() {
       sessionStorage.removeItem('kgb_user_nip');
       setEmployees([]); 
       setCurrentUser(null);
+      setNotification('Anda telah berhasil keluar.');
   };
 
   const handleNewQuote = () => {
@@ -409,6 +419,12 @@ function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative z-10 print:h-auto print:overflow-visible print:block">
+        {notification && (
+          <div className="absolute top-4 right-4 z-50 bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2">
+            {notification}
+          </div>
+        )}
+        
         {/* Mobile Header */}
         <div className="md:hidden flex items-center justify-between p-4 bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-20 shadow-sm print:hidden">
              <div className="flex items-center gap-3">
