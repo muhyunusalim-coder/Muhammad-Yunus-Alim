@@ -97,7 +97,7 @@ function App() {
   
   const [quote, setQuote] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'faq' | 'statistics' | 'report'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'kenaikan-pangkat' | 'faq' | 'statistics' | 'report'>('dashboard');
   const [isLayananKgbExpanded, setIsLayananKgbExpanded] = useState(true);
   const [notification, setNotification] = useState<string | null>(null);
 
@@ -334,7 +334,7 @@ function App() {
   const MenuItem = ({ view, icon: Icon, label, colorClass }: { view: string, icon: any, label: string, colorClass: string }) => (
     <button 
         onClick={() => { setCurrentView(view as any); setMobileMenuOpen(false); }}
-        className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl font-medium transition-all duration-300 group relative overflow-hidden ${
+        className={`w-full flex items-center justify-start gap-4 px-5 py-3.5 rounded-2xl font-medium transition-all duration-300 group relative overflow-hidden ${
             currentView === view 
             ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/25' 
             : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
@@ -381,6 +381,7 @@ function App() {
             </div>
             
             <MenuItem view="dashboard" icon={LayoutDashboard} label="Dashboard" colorClass="text-indigo-400" />
+            <MenuItem view="kenaikan-pangkat" icon={CalendarCheck} label="Layanan Kenaikan Pangkat" colorClass="text-blue-400" />
             
             <div className="space-y-1.5">
                 <button 
@@ -462,6 +463,20 @@ function App() {
                 <DashboardSkeleton />
             ) : (
                 <Suspense fallback={<PageLoader />}>
+                {currentView === 'kenaikan-pangkat' && (
+                    <div className="p-8 bg-white rounded-3xl shadow-sm border border-slate-100">
+                        <h2 className="text-2xl font-bold text-slate-800">Layanan Kenaikan Pangkat</h2>
+                        <p className="text-slate-500 mt-2">Pilih periode kenaikan pangkat:</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
+                            {['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'].map((month) => (
+                                <button key={month} className="p-4 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 text-left transition-all">
+                                    <span className="font-semibold text-slate-700">{month}</span>
+                                    <span className="block text-xs text-slate-500 mt-1">Periode Kenaikan Pangkat</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
                 {currentView === 'dashboard' && (
                     <>
                     {/* Hero Section */}
