@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { 
   FileText, Printer, Filter, Calendar, 
-  Search, FileSpreadsheet,
+  Search, FileSpreadsheet, FileDown,
   History, ListFilter, Loader2
 } from 'lucide-react';
 import { Employee } from '../types';
@@ -19,6 +19,7 @@ const ReportPage: React.FC<Props> = ({ employees, currentUser }) => {
   const [selectedMonth, setSelectedMonth] = useState<string>('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
   
@@ -142,6 +143,58 @@ const ReportPage: React.FC<Props> = ({ employees, currentUser }) => {
     }
   };
 
+  // Export PDF Handler
+  const handleExportPdf = async () => {
+    if (filteredData.length === 0) return;
+    setIsExportingPdf(true);
+
+    try {
+        const { jsPDF } = await import('jspdf');
+        const autoTable = (await import('jspdf-autotable')).default;
+        
+        const doc = new jsPDF('l', 'mm', 'a4');
+        
+        doc.setFontSize(16);
+        doc.text("DAFTAR NOMINATIF KENAIKAN GAJI BERKALA (KGB)", 148.5, 15, { align: 'center' });
+        doc.setFontSize(10);
+        doc.text(viewMode === 'monthly' ? `Periode: ${selectedMonth === 'All' ? 'Semua Bulan' : selectedMonth} ${selectedYear}` : 'Riwayat Proses (TMT Descending)', 148.5, 22, { align: 'center' });
+
+        const tableColumn = ["No", "Nama Pegawai", "NIP", "Golongan", "Jabatan", "Unit Kerja", "Gaji Lama", "Gaji Baru", "Masa Kerja", "TMT"];
+        const tableRows = filteredData.map((emp, index) => {
+            const hasAccess = currentUser?.nip === emp.nip || currentUser?.nip === ADMIN_NIP;
+            return [
+                index + 1,
+                emp.nama,
+                emp.nip,
+                emp.pangkat,
+                emp.jabatan,
+                emp.unitKerja,
+                hasAccess ? formatRupiah(emp.gajiLama) : '******',
+                hasAccess ? formatRupiah(emp.gajiBaru) : '******',
+                emp.masaKerja,
+                emp.tmt
+            ];
+        });
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 30,
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [79, 70, 229] }
+        });
+
+        const fileName = viewMode === 'monthly' 
+            ? `Laporan_${selectedMonth}_${selectedYear}.pdf` 
+            : `Riwayat_KGB_Processed.pdf`;
+        doc.save(fileName);
+    } catch (error) {
+        console.error("Failed to load PDF module", error);
+    } finally {
+        setIsExportingPdf(false);
+    }
+  };
+
   // Print Handler
   const handlePrint = () => {
     window.print();
@@ -178,6 +231,14 @@ const ReportPage: React.FC<Props> = ({ employees, currentUser }) => {
                 >
                     {isExporting ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
                     {isExporting ? 'Memproses...' : 'Ekspor Excel'}
+                </button>
+                <button 
+                    onClick={handleExportPdf}
+                    disabled={filteredData.length === 0 || isExportingPdf}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold text-sm transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {isExportingPdf ? <Loader2 size={18} className="animate-spin" /> : <FileDown size={18} />}
+                    {isExportingPdf ? 'Memproses...' : 'Unduh PDF'}
                 </button>
                 <button 
                     onClick={handlePrint}

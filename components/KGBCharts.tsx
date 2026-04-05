@@ -6,6 +6,7 @@ import { Employee } from '../types';
 // Lazy load chart components
 const MonthlyBarChart = lazy(() => import('./charts/MonthlyBarChart'));
 const StaticStatusPieChart = lazy(() => import('./charts/StaticStatusPieChart'));
+const YearlySalaryTrendChart = lazy(() => import('./charts/YearlySalaryTrendChart'));
 
 interface Props {
   employees: Employee[];
@@ -63,6 +64,24 @@ const KGBCharts: React.FC<Props> = ({ employees, onMonthClick, selectedMonth }) 
      // Mengubah 'value' menjadi 'Pegawai'
      return months.map(m => ({ name: m, Pegawai: counts[m] || 0 }));
   }, [employees, filterYear]);
+
+  const salaryTrendData = useMemo(() => {
+      const yearlySalaries: Record<number, { total: number, count: number }> = {};
+      employees.forEach(e => {
+          const { year } = parseDate(e.tmt);
+          if (year && e.gaji) {
+              if (!yearlySalaries[year]) yearlySalaries[year] = { total: 0, count: 0 };
+              yearlySalaries[year].total += e.gaji;
+              yearlySalaries[year].count += 1;
+          }
+      });
+      return Object.keys(yearlySalaries)
+          .map(year => ({
+              year: parseInt(year),
+              salary: Math.round(yearlySalaries[parseInt(year)].total / yearlySalaries[parseInt(year)].count)
+          }))
+          .sort((a, b) => a.year - b.year);
+  }, [employees]);
 
   const statusData = useMemo(() => {
     let pns = 0;
@@ -150,6 +169,25 @@ const KGBCharts: React.FC<Props> = ({ employees, onMonthClick, selectedMonth }) 
                     <StaticStatusPieChart data={statusData} totalASN={totalASN} />
                 </Suspense>
             </div>
+      </div>
+
+      {/* Chart 3: Line Chart (Salary Trend) */}
+      <div className="lg:col-span-3 bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/40 border border-white/60">
+        <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm">
+                <BarChart3 size={24} />
+            </div>
+            <div>
+                <h3 className="text-lg font-display font-bold text-slate-800">Tren Kenaikan Gaji Rata-rata</h3>
+                <p className="text-xs text-slate-400 font-medium font-bold uppercase tracking-wide">Per Tahun</p>
+            </div>
+        </div>
+
+        <div className="h-80 w-full">
+          <Suspense fallback={<ChartSkeleton />}>
+            <YearlySalaryTrendChart data={salaryTrendData} />
+          </Suspense>
+        </div>
       </div>
     </div>
   );
